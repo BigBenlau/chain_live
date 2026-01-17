@@ -8,6 +8,13 @@ interface VideoItemProps {
   count: number;
 }
 
+
+interface Args {
+  amount:BigInt
+  buyer:string
+  giftId:BigInt
+  payAmount:BigInt
+}
 function VideoItem({ src, alt, count }: VideoItemProps) {
   return (
     <div className="text-center">
@@ -71,8 +78,14 @@ function Video() {
     abi, // 合约 ABI
     eventName: 'GiftPurchased', // 事件名称
     onLogs(logs) {
-      console.log('New logs!', logs)
+
+      const log = logs[0];
+      const { args } = log as never as { args: Args }
+
+      console.log('New logs!', args.buyer)
       // 处理事件日志
+
+      setCount1(count1+1);
     },
   })
 

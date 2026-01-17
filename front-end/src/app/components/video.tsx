@@ -5,7 +5,7 @@ function Video() {
             <div className="text-center">
                 <div className="">
                     <img
-                        src="/gril1.png"
+                        src="/girl1.png"
                         alt="女孩图片 1"
                         className="w-80 h-80 object-cover shadow-xl"
                     />

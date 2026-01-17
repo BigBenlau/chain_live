@@ -1,8 +1,9 @@
-import { parseEther } from "viem";
-import { useSendTransaction } from 'wagmi'
-import { useWriteContract } from 'wagmi'
+'use client'
+
+import { useTx } from "./use-tx";
 
 function Gift() {
+  const { hash, error, isSubmitting, sendTx } = useTx();
 
   const datas = [
     {
@@ -22,60 +23,21 @@ function Gift() {
     }
   ];
 
-  // // regionstart useSendTransaction
-  // const { data: hash, sendTransaction } = useSendTransaction()
-
-  // function OnItemClick(id: number) {
-  //   console.log(id);
-
-  //   const data = datas.find(data => data.id === id);
-  //   if (!data) return;
-
-  //   sendTransaction({
-  //     to: '0x435a345bB8eC10b30738217332216849506aCCcF',
-  //     value: parseEther(data.price),
-  //   })
-  // }
-  // // regionend useSendTransaction
-
-  //regionstart write
-   const abi = [
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "giftId",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "amount",
-          "type": "uint256"
-        }
-      ],
-      "name": "buyWithNative",
-      "outputs": [],
-      "stateMutability": "payable",
-      "type": "function"
-    }
-  ]
-
-  const { data: hash, writeContract } = useWriteContract()
-
   async function OnItemClick(id: number) {
-    console.log(id);
+    await sendTx("/tx/buy", { giftId: id, amount: 1 });
 
-    const data = datas.find(data => data.id === id);
-    if (!data) return;
+    const streamer = "0x451DcAcfd7e92A3604Ed68E063BFa1200c3D3aF3";
+    if (!streamer) {
+      return;
+    }
 
-    writeContract({
-      address: '0x3a8de1E232d9674626A49e0127DFD8cc3aD9cb68',
-      abi,
-      functionName: 'buyWithNative',
-      args: [BigInt(data.id), BigInt(1)],
-      value: parseEther(data.price),
-    })
-  } 
+    await sendTx("/tx/tip", {
+      streamer,
+      giftId: id,
+      amount: 1,
+      clientNonce: Date.now(),
+    });
+  }
 
   return (
     <div className="mt-6 flex flex-col items-center justify-center">
@@ -85,6 +47,8 @@ function Gift() {
         }
       </div>
       {hash && <div>Transaction Hash: {hash}</div>}
+      {isSubmitting && <div className="text-white mt-2">提交交易中...</div>}
+      {error && <div className="text-red-400 mt-2">{error}</div>}
     </div>
   )
 }

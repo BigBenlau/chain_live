@@ -7,6 +7,7 @@ import Connect from './components/connect'
 import Video from './components/video'
 import Gift from './components/gift'
 import Rank from './components/rank'
+import Amount from './components/amount'
 
 function App() {
   const [showConnect, setShowConnect] = useState(false)
@@ -21,8 +22,9 @@ function App() {
       {/* Header div with button */}
       <header className="bg-white dark:bg-gray-800 shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
-          <div className="flex justify-end items-center">
+          <div className="flex justify-end items-center space-x-4">
             <ConnectButton handleConnectClick={handleConnectClick} />
+            <Amount />
           </div>
         </div>
       </header>

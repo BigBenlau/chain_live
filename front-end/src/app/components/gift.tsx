@@ -1,8 +1,11 @@
-import { parseEther } from "viem";
+'use client'
+
+import { useState } from "react";
 import { useSendTransaction } from 'wagmi'
-import { useWriteContract } from 'wagmi'
 
 function Gift() {
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const datas = [
     {
@@ -22,60 +25,40 @@ function Gift() {
     }
   ];
 
-  // // regionstart useSendTransaction
-  // const { data: hash, sendTransaction } = useSendTransaction()
+  const { data: hash, sendTransaction } = useSendTransaction()
 
-  // function OnItemClick(id: number) {
-  //   console.log(id);
-
-  //   const data = datas.find(data => data.id === id);
-  //   if (!data) return;
-
-  //   sendTransaction({
-  //     to: '0x435a345bB8eC10b30738217332216849506aCCcF',
-  //     value: parseEther(data.price),
-  //   })
-  // }
-  // // regionend useSendTransaction
-
-  //regionstart write
-   const abi = [
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "giftId",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "amount",
-          "type": "uint256"
-        }
-      ],
-      "name": "buyWithNative",
-      "outputs": [],
-      "stateMutability": "payable",
-      "type": "function"
+  async function postTx(path: string, body: unknown) {
+    const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+    const response = await fetch(`${baseUrl}${path}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(text || "backend error");
     }
-  ]
-
-  const { data: hash, writeContract } = useWriteContract()
+    return response.json() as Promise<{ to: string; data: string; value: number }>;
+  }
 
   async function OnItemClick(id: number) {
-    console.log(id);
+    setError(null);
+    setIsSubmitting(true);
 
-    const data = datas.find(data => data.id === id);
-    if (!data) return;
-
-    writeContract({
-      address: '0x3a8de1E232d9674626A49e0127DFD8cc3aD9cb68',
-      abi,
-      functionName: 'buyWithNative',
-      args: [BigInt(data.id), BigInt(1)],
-      value: parseEther(data.price),
-    })
-  } 
+    try {
+      const payload = await postTx("/tx/buy", { giftId: id, amount: 1 });
+      sendTransaction({
+        to: payload.to as `0x${string}`,
+        data: payload.data as `0x${string}`,
+        value: BigInt(payload.value),
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "unknown error";
+      setError(message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
 
   return (
     <div className="mt-6 flex flex-col items-center justify-center">
@@ -85,6 +68,8 @@ function Gift() {
         }
       </div>
       {hash && <div>Transaction Hash: {hash}</div>}
+      {isSubmitting && <div className="text-white mt-2">提交交易中...</div>}
+      {error && <div className="text-red-400 mt-2">{error}</div>}
     </div>
   )
 }

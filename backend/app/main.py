@@ -2,6 +2,7 @@ import argparse
 import json
 import os
 import time
+from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
 
@@ -19,17 +20,18 @@ from web3.providers.rpc import HTTPProvider
 
 
 class Settings:
-    rpc_http_url = os.getenv("RPC_HTTP_URL", "http://127.0.0.1:8545")
+    rpc_http_url = os.getenv("RPC_HTTP_URL", "https://testnet-rpc.monad.xyz")
 
-    contract_address = os.getenv("GIFT_CONTRACT_ADDRESS", "")
+    contract_address = os.getenv("GIFT_CONTRACT_ADDRESS", "0x3a8de1e232d9674626a49e0127dfd8cc3ad9cb68")
     contract_abi_path = os.getenv(
         "GIFT_CONTRACT_ABI",
-        "../packages/hardhat/artifacts/contracts/GiftCredits.sol/GiftCredits1155.json",
+        "packages/hardhat/deployments/monadTestnet/GiftCredits1155.json",
     )
 
     database_url = os.getenv("DATABASE_URL", "sqlite:///./backend/data/events.db")
     indexer_start_block = int(os.getenv("INDEXER_START_BLOCK", "0"))
     indexer_poll_interval = float(os.getenv("INDEXER_POLL_INTERVAL", "2.0"))
+    indexer_batch_size = int(os.getenv("INDEXER_BATCH_SIZE", "100"))
 
 
 settings = Settings()
@@ -163,13 +165,14 @@ class EmptyRequest(BaseModel):
 
 # ===== FastAPI 接口 =====
 
-app = FastAPI(title="Gift Credits Backend", version="0.1.0")
-
-
-@app.on_event("startup")
 # 启动时初始化数据库表
-def startup() -> None:
+@asynccontextmanager
+async def lifespan(_: FastAPI):
     Base.metadata.create_all(bind=engine)
+    yield
+
+
+app = FastAPI(title="Gift Credits Backend", version="0.1.0", lifespan=lifespan)
 
 
 # 构造未签名交易 payload（to/data/value）

@@ -22,7 +22,7 @@ export DATABASE_URL=sqlite+aiosqlite:///./backend/data/events.db
 
 ## 启动 API
 ```bash
-uvicorn backend.app.main:app --host 0.0.0.0 --port 8000
+python -m uvicorn backend.app.main:app --host 0.0.0.0 --port 8000
 ```
 
 ## 启动索引器

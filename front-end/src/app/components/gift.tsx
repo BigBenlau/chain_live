@@ -1,11 +1,9 @@
 'use client'
 
-import { useState } from "react";
-import { useSendTransaction } from 'wagmi'
+import { useTx } from "./use-tx";
 
 function Gift() {
-  const [error, setError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { hash, error, isSubmitting, sendTx } = useTx();
 
   const datas = [
     {
@@ -25,39 +23,20 @@ function Gift() {
     }
   ];
 
-  const { data: hash, sendTransaction } = useSendTransaction()
-
-  async function postTx(path: string, body: unknown) {
-    const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
-    const response = await fetch(`${baseUrl}${path}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    if (!response.ok) {
-      const text = await response.text();
-      throw new Error(text || "backend error");
-    }
-    return response.json() as Promise<{ to: string; data: string; value: number }>;
-  }
-
   async function OnItemClick(id: number) {
-    setError(null);
-    setIsSubmitting(true);
+    await sendTx("/tx/buy", { giftId: id, amount: 1 });
 
-    try {
-      const payload = await postTx("/tx/buy", { giftId: id, amount: 1 });
-      sendTransaction({
-        to: payload.to as `0x${string}`,
-        data: payload.data as `0x${string}`,
-        value: BigInt(payload.value),
-      });
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "unknown error";
-      setError(message);
-    } finally {
-      setIsSubmitting(false);
+    const streamer = "0x451DcAcfd7e92A3604Ed68E063BFa1200c3D3aF3";
+    if (!streamer) {
+      return;
     }
+
+    await sendTx("/tx/tip", {
+      streamer,
+      giftId: id,
+      amount: 1,
+      clientNonce: Date.now(),
+    });
   }
 
   return (

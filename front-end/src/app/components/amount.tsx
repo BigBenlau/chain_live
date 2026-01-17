@@ -24,7 +24,8 @@ function Amount({ giftId = 1 }: AmountProps) {
       try {
         const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
         const url = new URL(`${baseUrl}/credits`);
-        url.searchParams.set("user", address);
+        const user = address as string;
+        url.searchParams.set("user", user);
         url.searchParams.set("gift_id", String(giftId));
         const response = await fetch(url.toString(), { signal: controller.signal });
         if (!response.ok) {

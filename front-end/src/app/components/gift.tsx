@@ -1,5 +1,6 @@
 import { parseEther } from "viem";
 import { useSendTransaction } from 'wagmi'
+import { useWriteContract } from 'wagmi'
 
 function Gift() {
 
@@ -7,33 +8,74 @@ function Gift() {
     {
       id: 1,
       url: "/gift1.png",
-      price: "0.1",
+      price: "0.0001",
     },
     {
       id: 2,
       url: "/gift2.png",
-      price: "0.2",
+      price: "0.001",
     },
     {
       id: 3,
       url: "/gift3.png",
-      price: "0.3",
+      price: "0.005",
     }
   ];
 
-  const { data: hash, sendTransaction } = useSendTransaction()
+  // // regionstart useSendTransaction
+  // const { data: hash, sendTransaction } = useSendTransaction()
 
-  function OnItemClick(id: number) {
+  // function OnItemClick(id: number) {
+  //   console.log(id);
+
+  //   const data = datas.find(data => data.id === id);
+  //   if (!data) return;
+
+  //   sendTransaction({
+  //     to: '0x435a345bB8eC10b30738217332216849506aCCcF',
+  //     value: parseEther(data.price),
+  //   })
+  // }
+  // // regionend useSendTransaction
+
+  //regionstart write
+   const abi = [
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "giftId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "buyWithNative",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    }
+  ]
+
+  const { data: hash, writeContract } = useWriteContract()
+
+  async function OnItemClick(id: number) {
     console.log(id);
 
     const data = datas.find(data => data.id === id);
     if (!data) return;
 
-    sendTransaction({
-      to: '0x435a345bB8eC10b30738217332216849506aCCcF',
+    writeContract({
+      address: '0x3a8de1E232d9674626A49e0127DFD8cc3aD9cb68',
+      abi,
+      functionName: 'buyWithNative',
+      args: [BigInt(data.id), BigInt(1)],
       value: parseEther(data.price),
     })
-  }
+  } 
 
   return (
     <div className="mt-6 flex flex-col items-center justify-center">

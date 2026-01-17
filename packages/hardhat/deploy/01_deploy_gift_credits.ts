@@ -1,23 +1,37 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
+import fs from "fs";
+import path from "path";
 
 // 部署高频打赏系统合约，并初始化礼物定价与启用状态。
 const deployGiftCredits: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployer } = await hre.getNamedAccounts();
   const { deploy } = hre.deployments;
 
-  const baseUri = process.env.GIFT_BASE_URI || "ipfs://gifts/{id}.json";
-  const defaultPrices = ["0.001", "0.01", "0.05"].map(price => hre.ethers.parseEther(price));
-  const giftCount = Number(process.env.GIFT_COUNT || defaultPrices.length);
-  const priceList = (process.env.GIFT_PRICES || "")
-    .split(",")
-    .map(value => value.trim())
-    .filter(value => value.length > 0)
-    .map(value => hre.ethers.parseEther(value));
-  const initialPrices = priceList.length > 0 ? priceList : defaultPrices;
+  const configPath = path.join(__dirname, "../config/gift_deploy_config.json");
+  const configRaw = fs.readFileSync(configPath, "utf-8");
+  const config = JSON.parse(configRaw) as {
+    baseUri: string;
+    giftCount: number;
+    giftPrices: string[];
+  };
 
-  if (giftCount !== initialPrices.length) {
-    throw new Error("GIFT_COUNT must match GIFT_PRICES length");
+  if (!config.baseUri) {
+    throw new Error("baseUri is required in gift_deploy_config.json");
+  }
+  if (config.giftCount === undefined || config.giftCount === null) {
+    throw new Error("giftCount is required in gift_deploy_config.json");
+  }
+  if (!config.giftPrices || !Array.isArray(config.giftPrices)) {
+    throw new Error("giftPrices is required and must be an array in gift_deploy_config.json");
+  }
+
+  const baseUri = config.baseUri;
+  const giftCount = Number(config.giftCount);
+  const initialPrices = config.giftPrices.map(price => hre.ethers.parseEther(price));
+
+  if (!giftCount || giftCount !== initialPrices.length) {
+    throw new Error("giftCount must match giftPrices length in gift_deploy_config.json");
   }
 
   const gift = await deploy("GiftCredits1155", {

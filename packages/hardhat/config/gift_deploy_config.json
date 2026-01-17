@@ -1,0 +1,5 @@
+{
+  "baseUri": "ipfs://gifts/{id}.json",
+  "giftCount": 3,
+  "giftPrices": ["0.0001", "0.001", "0.005"]
+}

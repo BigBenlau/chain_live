@@ -6,6 +6,7 @@ import ConnectButton from './components/connect-button'
 import Connect from './components/connect'
 import Video from './components/video'
 import Gift from './components/gift'
+import Rank from './components/rank'
 
 function App() {
   const [showConnect, setShowConnect] = useState(false)
@@ -33,8 +34,18 @@ function App() {
         )}
         {!showConnect && (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <Video/>
-            <Gift/>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* 左侧：视频和礼物 */}
+              <div className="lg:col-span-2 space-y-8">
+                <Video/>
+                <Gift/>
+              </div>
+              
+              {/* 右侧：排行榜 */}
+              <div className="lg:col-span-1">
+                <Rank/>
+              </div>
+            </div>
           </div>
         )}
       </main>

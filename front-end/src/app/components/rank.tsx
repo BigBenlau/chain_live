@@ -37,11 +37,8 @@ function Rank() {
     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 border border-gray-200 dark:border-gray-700">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-          排行榜
+          咖啡排行榜
         </h2>
-        <div className="text-sm text-gray-500 dark:text-gray-400">
-          实时更新
-        </div>
       </div>
 
       <div className="space-y-4">
@@ -49,7 +46,7 @@ function Rank() {
         <div className="grid grid-cols-12 gap-4 text-sm font-medium text-gray-500 dark:text-gray-400 pb-2 border-b border-gray-200 dark:border-gray-700">
           <div className="col-span-1 text-center">排名</div>
           <div className="col-span-7">地址</div>
-          <div className="col-span-4 text-right">金额</div>
+          <div className="col-span-4 text-right">杯</div>
         </div>
 
         {/* 排行榜列表 */}
@@ -84,9 +81,6 @@ function Rank() {
             <div className="col-span-4 text-right">
               <div className="font-bold text-gray-900 dark:text-white">
                 {formatAmount(item.amount)}
-              </div>
-              <div className="text-xs text-gray-500 dark:text-gray-400">
-                MON
               </div>
             </div>
           </div>
